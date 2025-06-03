@@ -1,7 +1,19 @@
-const OnboardingPage = () => {
-  return (
-    <div>OnboardingPage</div>
-  )
-}
+import { getUserOnboardingStatus } from "@/actions/user"
+import { industries } from "@/data/industries"
+import { redirect } from "next/dist/server/api-utils";
+import OnboardingForm from "./_components/onboarding-form";
 
-export default OnboardingPage
+export default async function OnboardingPage() {
+    // Check if user is already onboarded
+    const { isOnboarded } = await getUserOnboardingStatus();
+  
+    if (isOnboarded) {
+      redirect("/dashboard");
+    }
+  
+    return (
+      <main>
+        <OnboardingForm industries={industries} />
+      </main>
+    );
+  }
