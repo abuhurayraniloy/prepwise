@@ -6,10 +6,26 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
+
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import React from "react";
 import { format, formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
 function DashboardView({ insights }) {
@@ -101,9 +117,9 @@ function DashboardView({ insights }) {
           <CardContent>
             <div className="text-2xl font-bold">{insights.demandLevel}</div>
             <div
-              className= {`h-2 w-full rounded-full mt-2 ${getDemandLevelColor(
+              className={`h-2 w-full rounded-full mt-2 ${getDemandLevelColor(
                 insights.demandLevel
-              )}` }
+              )}`}
             />
           </CardContent>
         </Card>
@@ -118,6 +134,85 @@ function DashboardView({ insights }) {
             <div className="flex flex-wrap gap-1">
               {insights.topSkills.map((skill) => (
                 <Badge key={skill} variant="secondary">
+                  {skill}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Salary Ranges Chart */}
+      <Card className="col-span-4">
+        <CardHeader>
+          <CardTitle>Salary Ranges by Role</CardTitle>
+          <CardDescription>
+            Displaying minimum, median, and maximum salaries (in thousands)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={salaryData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-background border rounded-lg p-2 shadow-md">
+                          <p className="font-medium">{label}</p>
+                          {payload.map((item) => (
+                            <p key={item.name} className="text-sm">
+                              {item.name}: ${item.value}K
+                            </p>
+                          ))}
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar dataKey="min" fill="#94a3b8" name="Min Salary (K)" />
+                <Bar dataKey="median" fill="#64748b" name="Median Salary (K)" />
+                <Bar dataKey="max" fill="#475569" name="Max Salary (K)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Industry Trends */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Key Industry Trends</CardTitle>
+            <CardDescription>
+              Current trends shaping the industry
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-4">
+              {insights.keyTrends.map((trend, index) => (
+                <li key={index} className="flex items-start space-x-2">
+                  <div className="h-2 w-2 mt-2 rounded-full bg-primary" />
+                  <span>{trend}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recommended Skills</CardTitle>
+            <CardDescription>Skills to consider developing</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {insights.recommendedSkills.map((skill) => (
+                <Badge key={skill} variant="outline">
                   {skill}
                 </Badge>
               ))}
