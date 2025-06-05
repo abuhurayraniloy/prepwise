@@ -3,16 +3,14 @@
 import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Download,
-  Save,
-} from "lucide-react";
+import { Download, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { saveResume } from "@/actions/resume";
 import useFetch from "@/hooks/use-fetch";
 import { resumeSchema } from "@/app/lib/schema";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function ResumeBuilder({ initialContent }) {
   const [activeTab, setActiveTab] = useState("edit");
@@ -50,7 +48,19 @@ export default function ResumeBuilder({ initialContent }) {
     if (initialContent) setActiveTab("preview");
   }, [initialContent]);
 
+  const onSubmit = async (data) => {
+    try {
+      const formattedContent = previewContent
+        .replace(/\n/g, "\n") // Normalize newlines
+        .replace(/\n\s*\n/g, "\n\n") // Normalize multiple newlines to double newlines
+        .trim();
 
+      console.log(previewContent, formattedContent);
+      await saveResumeFn(previewContent);
+    } catch (error) {
+      console.error("Save error:", error);
+    }
+  };
 
   return (
     <div data-color-mode="light" className="space-y-4">
@@ -64,14 +74,14 @@ export default function ResumeBuilder({ initialContent }) {
             onClick={handleSubmit()}
             disabled={isSaving}
           >
-            { 
+            {
               <>
                 <Save className="h-4 w-4" />
                 Save
               </>
             }
           </Button>
-          <Button >
+          <Button>
             {
               <>
                 <Download className="h-4 w-4" />
@@ -89,7 +99,7 @@ export default function ResumeBuilder({ initialContent }) {
         </TabsList>
 
         <TabsContent value="edit">
-          <form className="space-y-8">
+          <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
             {/* Contact Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Contact Information</h3>
@@ -152,8 +162,46 @@ export default function ResumeBuilder({ initialContent }) {
               </div>
             </div>
 
-            
+            {/* Summary */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Professional Summary</h3>
+              <Controller
+                name="summary"
+                control={control}
+                render={({ field }) => (
+                  <Textarea
+                    {...field}
+                    className="h-32"
+                    placeholder="Write a compelling professional summary..."
+                    error={errors.summary}
+                  />
+                )}
+              />
+              {errors.summary && (
+                <p className="text-sm text-red-500">{errors.summary.message}</p>
+              )}
+            </div>
 
+            {/* Skills */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Skills</h3>
+              <Controller
+                name="skills"
+                control={control}
+                render={({ field }) => (
+                  <Textarea
+                    {...field}
+                    className="h-32"
+                    placeholder="List your key skills..."
+                    error={errors.skills}
+                  />
+                )}
+              />
+              {errors.skills && (
+                <p className="text-sm text-red-500">{errors.skills.message}</p>
+              )}
+            </div>
+            
           </form>
         </TabsContent>
 
