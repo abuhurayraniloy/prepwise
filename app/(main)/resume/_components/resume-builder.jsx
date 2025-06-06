@@ -16,6 +16,7 @@ import { EntryForm } from "./entry-form";
 export default function ResumeBuilder({ initialContent }) {
   const [activeTab, setActiveTab] = useState("edit");
   const [resumeMode, setResumeMode] = useState("preview");
+  const [previewContent, setPreviewContent] = useState(initialContent);
 
   const {
     control,
@@ -61,6 +62,20 @@ export default function ResumeBuilder({ initialContent }) {
     } catch (error) {
       console.error("Save error:", error);
     }
+  };
+
+  const getCombinedContent = () => {
+    const { summary, skills, experience, education, projects } = formValues;
+    return [
+      getContactMarkdown(),
+      summary && `## Professional Summary\n\n${summary}`,
+      skills && `## Skills\n\n${skills}`,
+      entriesToMarkdown(experience, "Work Experience"),
+      entriesToMarkdown(education, "Education"),
+      entriesToMarkdown(projects, "Projects"),
+    ]
+      .filter(Boolean)
+      .join("\n\n");
   };
 
   return (
@@ -203,7 +218,7 @@ export default function ResumeBuilder({ initialContent }) {
               )}
             </div>
 
-                 {/* Experience */}
+            {/* Experience */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Work Experience</h3>
               <Controller
@@ -265,7 +280,6 @@ export default function ResumeBuilder({ initialContent }) {
                 </p>
               )}
             </div>
-
           </form>
         </TabsContent>
 
