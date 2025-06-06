@@ -8,7 +8,6 @@ import { format, parse } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
 import {
   Card,
   CardContent,
@@ -16,9 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import { entrySchema } from "@/app/lib/schema";
-import { PlusCircle, Sparkles } from "lucide-react";
+import { Sparkles, PlusCircle, X, Pencil, Save, Loader2 } from "lucide-react";
 import { improveWithAI } from "@/actions/resume";
 import { toast } from "sonner";
 import useFetch from "@/hooks/use-fetch";
@@ -53,13 +51,6 @@ export function EntryForm({ type, entries, onChange }) {
 
   const current = watch("current");
 
-  const {
-    loading: isImproving,
-    fn: improveWithAIFn,
-    data: improvedContent,
-    error: improveError,
-  } = useFetch(improveWithAI);
-
   const handleAdd = handleValidation((data) => {
     const formattedEntry = {
       ...data,
@@ -78,6 +69,25 @@ export function EntryForm({ type, entries, onChange }) {
     onChange(newEntries);
   };
 
+  const {
+    loading: isImproving,
+    fn: improveWithAIFn,
+    data: improvedContent,
+    error: improveError,
+  } = useFetch(improveWithAI);
+
+  // Add this effect to handle the improvement result
+  useEffect(() => {
+    if (improvedContent && !isImproving) {
+      setValue("description", improvedContent);
+      toast.success("Description improved successfully!");
+    }
+    if (improveError) {
+      toast.error(improveError.message || "Failed to improve description");
+    }
+  }, [improvedContent, improveError, isImproving, setValue]);
+
+  // Replace handleImproveDescription with this
   const handleImproveDescription = async () => {
     const description = watch("description");
     if (!description) {
@@ -91,9 +101,38 @@ export function EntryForm({ type, entries, onChange }) {
     });
   };
 
-
   return (
     <div className="space-y-4">
+      <div className="space-y-4">
+        {entries.map((item, index) => (
+          <Card key={index}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {item.title} @ {item.organization}
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="icon"
+                type="button"
+                onClick={() => handleDelete(index)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                {item.current
+                  ? `${item.startDate} - Present`
+                  : `${item.startDate} - ${item.endDate}`}
+              </p>
+              <p className="mt-2 text-sm whitespace-pre-wrap">
+                {item.description}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
       {isAdding && (
         <Card>
           <CardHeader>
@@ -200,7 +239,6 @@ export function EntryForm({ type, entries, onChange }) {
                 </>
               )}
             </Button>
-
           </CardContent>
           <CardFooter className="flex justify-end space-x-2">
             <Button
