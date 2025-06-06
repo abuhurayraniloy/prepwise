@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Download, Save } from "lucide-react";
+import { AlertTriangle, Download, Edit, Loader2, Monitor, Save,} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -12,11 +12,15 @@ import useFetch from "@/hooks/use-fetch";
 import { resumeSchema } from "@/app/lib/schema";
 import { Textarea } from "@/components/ui/textarea";
 import { EntryForm } from "./entry-form";
+import MDEditor from "@uiw/react-md-editor";
+import { entriesToMarkdown } from "@/app/lib/helper";
+import { useUser } from "@clerk/nextjs";
 
 export default function ResumeBuilder({ initialContent }) {
   const [activeTab, setActiveTab] = useState("edit");
   const [resumeMode, setResumeMode] = useState("preview");
   const [previewContent, setPreviewContent] = useState(initialContent);
+  const { user } = useUser();
 
   const {
     control,
@@ -62,6 +66,29 @@ export default function ResumeBuilder({ initialContent }) {
     } catch (error) {
       console.error("Save error:", error);
     }
+  };
+
+  // Update preview content when form values change
+  useEffect(() => {
+    if (activeTab === "edit") {
+      const newContent = getCombinedContent();
+      setPreviewContent(newContent ? newContent : initialContent);
+    }
+  }, [formValues, activeTab]);
+
+  const getContactMarkdown = () => {
+    const { contactInfo } = formValues;
+    const parts = [];
+    if (contactInfo.email) parts.push(`📧 ${contactInfo.email}`);
+    if (contactInfo.mobile) parts.push(`📱 ${contactInfo.mobile}`);
+    if (contactInfo.linkedin)
+      parts.push(`💼 [LinkedIn](${contactInfo.linkedin})`);
+    if (contactInfo.twitter) parts.push(`👨🏼‍💼 [Twitter](${contactInfo.twitter})`);
+
+    return parts.length > 0
+      ? `## <div align="center">${user.fullName}</div>
+        \n\n<div align="center">\n\n${parts.join(" | ")}\n\n</div>`
+      : "";
   };
 
   const getCombinedContent = () => {
@@ -315,6 +342,25 @@ export default function ResumeBuilder({ initialContent }) {
               </span>
             </div>
           )}
+          <div className="border rounded-lg">
+            <MDEditor
+              value={previewContent}
+              onChange={setPreviewContent}
+              height={800}
+              preview={resumeMode}
+            />
+          </div>
+          <div className="hidden">
+            <div id="resume-pdf">
+              <MDEditor.Markdown
+                source={previewContent}
+                style={{
+                  background: "white",
+                  color: "black",
+                }}
+              />
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
