@@ -40,14 +40,16 @@ export default function CoverLetterList({ coverLetters }) {
 
   if (!coverLetters?.length) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>No Cover Letters Yet</CardTitle>
-          <CardDescription>
-            Create your first cover letter to get started
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <div className="px-10 ">
+        <Card>
+          <CardHeader>
+            <CardTitle>No Cover Letters Yet</CardTitle>
+            <CardDescription>
+              Create your first cover letter to get started
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
     );
   }
 
