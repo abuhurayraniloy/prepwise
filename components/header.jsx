@@ -55,6 +55,12 @@ const Header = async() => {
                             Interview Prep
                         </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem>
+                        <Link href={'/chat-bot'} className="flex items-center gap-2">
+                            <GraduationCap className="h-4 w-4" />
+                            Chat With AI
+                        </Link>
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
                 </DropdownMenu>
                 </SignedIn>
